@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<title>Ký túc xá Đại học Quốc gia khu A mở rộng</title>
+
+	<style>
+		html,
+		body,
+		#viewDiv {
+			padding: 0;
+			margin: 0;
+			height: 100%;
+			width: 100%;
+		}
+
+		#back {
+			position: absolute;
+			bottom: 20px;
+		}
+
+		#back i {
+			background-image: url(app/public/img/back.svg);
+			background-repeat: no-repeat;
+			display: inline-block;
+			width: 100px;
+			height: 25px;
+			padding-left: 25px;
+			padding-top: 2px;
+			margin: 10px;
+			cursor: pointer;
+			background-size: 20px;
+		}
+	</style>
+
+	<link rel="stylesheet" href="https://js.arcgis.com/4.16/esri/themes/light/main.css" />
+	<script src="https://js.arcgis.com/4.16/"></script>
+
+	<script>
+		require([
+			"esri/Map",
+			"esri/views/SceneView",
+			"esri/layers/GeoJSONLayer",
+			"esri/layers/SceneLayer", "esri/layers/GraphicsLayer", "esri/Graphic", "esri/request",
+			"esri/symbols/FillSymbol3DLayer"
+		], function (Map, SceneView, GeoJSONLayer, SceneLayer,
+			GraphicsLayer, Graphic, esriRequest, FillSymbol3DLayer) {
+
+			var createGraphic = function (data) {
+				return new Graphic({
+					geometry: data,
+					symbol: data.symbol,
+					attributes: data,
+					popupTemplate: data.popupTemplate
+				});
+			};
+
+			const json_options = {
+				query: {
+					f: "json"
+				},
+				responseType: "json"
+			};
+
+			const map = new Map({
+				basemap: "topo-vector"
+			});
+
+			//AH
+			const geojson_AH_BlockLayer = new GeoJSONLayer({
+				url: "AH_data/loadblockdata.php",
+				elevationInfo: {
+					mode: "relative-to-ground"
+				}
+			});
+			const geojson_AH_GlassLayer = new GeoJSONLayer({
+				url: "AH_data/loadglassdata.php",
+				elevationInfo: {
+					mode: "relative-to-ground"
+				}
+			});
+			const geojson_AH_DoorLayer = new GeoJSONLayer({
+				url: "AH_data/loaddoordata.php",
+				elevationInfo: {
+					mode: "relative-to-ground"
+				}
+			});
+			const geojson_AH_RoofLayer = new GeoJSONLayer({
+				url: "AH_data/loadroofdata.php",
+				elevationInfo: {
+					mode: "relative-to-ground"
+				}
+			});
+			const geojson_AH_BalconyLayer = new GeoJSONLayer({
+				url: "AH_data/loadbalconydata.php",
+				elevationInfo: {
+					mode: "relative-to-ground"
+				}
+			});
+
+			geojson_AH_BlockLayer.renderer = {
+				type: "simple",
+				symbol: {
+					type: "polygon-3d",
+					symbolLayers: [
+						{
+							type: "extrude",
+							material: {
+								color: [140, 155, 207, 1],
+							},
+							edges: {
+								type: "solid",
+								color: [35, 48, 92, 0.1]
+							}
+						}
+					]
+				},
+				visualVariables: [
+					{
+						type: "size",
+						axis: "height",
+						valueExpression: "$feature['height']"
+					}
+				]
+			};
+			geojson_AH_GlassLayer.renderer = {
+				type: "simple",
+				symbol: {
+					type: "polygon-3d",
+					symbolLayers: [
+						{
+							type: "extrude",
+							material: {
+								color: [245, 240, 225, 0.5],
+							},
+							edges: {
+								type: "solid",
+								color: [50, 50, 50, 0.1]
+							}
+						}
+					]
+				},
+				visualVariables: [
+					{
+						type: "size",
+						axis: "height",
+						valueExpression: "$feature['height']"
+					}
+				]
+			};
+			geojson_AH_DoorLayer.renderer = {
+				type: "simple",
+				symbol: {
+					type: "polygon-3d",
+					symbolLayers: [
+						{
+							type: "extrude",
+							material: {
+								color: [255, 255, 255, 0.7],
+							},
+							edges: {
+								type: "solid",
+								color: [50, 50, 50, 0.1]
+							}
+						}
+					]
+				},
+				visualVariables: [
+					{
+						type: "size",
+						axis: "height",
+						valueExpression: "$feature['height']"
+					}
+				]
+			};
+			geojson_AH_RoofLayer.renderer = {
+				type: "simple",
+				symbol: {
+					type: "polygon-3d",
+					symbolLayers: [
+						{
+							type: "extrude",
+							material: {
+								color: [145, 145, 145, 1],
+							},
+							edges: {
+								type: "solid",
+								color: [50, 50, 50, 0.1]
+							}
+						}
+					]
+				},
+				visualVariables: [
+					{
+						type: "size",
+						axis: "height",
+						valueExpression: "$feature['height']"
+					}
+				]
+			};
+			geojson_AH_BalconyLayer.renderer = {
+				type: "simple",
+				symbol: {
+					type: "polygon-3d",
+					symbolLayers: [
+						{
+							type: "extrude",
+							material: {
+								color: [140, 155, 207, 1],
+							},
+							edges: {
+								type: "solid",
+								color: [50, 50, 50, 0.1]
+							}
+						}
+					]
+				},
+				visualVariables: [
+					{
+						type: "size",
+						axis: "height",
+						valueExpression: "$feature['height']"
+					}
+				]
+			};
+
+			geojson_AH_GlassLayer.popupEnabled = false;
+			geojson_AH_DoorLayer.popupEnabled = false;
+			geojson_AH_RoofLayer.popupEnabled = false;
+			geojson_AH_BalconyLayer.popupEnabled = false;
+
+			map.add(geojson_AH_BlockLayer);
+			map.add(geojson_AH_GlassLayer);
+			map.add(geojson_AH_DoorLayer);
+			map.add(geojson_AH_RoofLayer);
+			map.add(geojson_AH_BalconyLayer);
+
+			//AG
+			const data_AG = new GeoJSONLayer({
+				url: "./AG_data/data.geojson",
+				renderer: {
+					type: "simple",
+					symbol: {
+						type: "polygon-3d",
+						symbolLayers: [{
+							type: "extrude",
+							size: 2.00000,
+							material: {
+								color: "#7fffd4"
+							},
+							edges: {
+								type: "solid", // autocasts as new SolidEdges3D()
+								color: [50, 50, 50, 0.5]
+							},
+						}]
+					}
+				}
+			});
+
+			const toa_AG = new GeoJSONLayer({
+				url: "./AG_data/toa.geojson",
+				renderer: {
+					type: "simple",
+					symbol: {
+						type: "polygon-3d",
+						symbolLayers: [{
+							type: "extrude",
+							size: 53.00000,
+							material: {
+								color: "#7fffd4"
+							},
+
+						}]
+					}
+				}
+			});
+			const tang_AG = new GeoJSONLayer({
+				url: "./AG_data/tang.geojson",
+				renderer: {
+					type: "simple",
+					symbol: {
+						type: "polygon-3d",
+						symbolLayers: [{
+							type: "extrude",
+							size: 4.00000,
+							material: {
+								color: "#7fffd4"
+							},
+							edges: {
+								type: "solid", // autocasts as new SolidEdges3D()
+								color: [50, 50, 50, 0.5]
+							},
+						}]
+					}
+				}
+			});
+			map.add(data_AG);
+			map.add(tang_AG);
+			map.add(toa_AG);
+
+			const view = new SceneView({
+				container: "viewDiv",
+				map: map,
+				camera: {
+					position: [106.80909738589291, 10.880591452357946, 120],
+					heading: 0,
+					tilt: 60
+				}
+			});
+
+			view.popup.defaultPopupTemplateEnabled = true;
+
+			// view.on("click", function (event) { // Listen for the click event
+			// 	view.hitTest(event).then(function (hitTestResults) { // Search for features where the user clicked
+			// 		if (hitTestResults.results) {
+			// 			console.log('[' + event.mapPoint.longitude + ',' + event.mapPoint.latitude + ',0]');
+			// 			view.popup.open({ // open a popup to show some of the results
+			// 				location: event.mapPoint,
+			// 				title: "Lat/Long Results",
+			// 				content: "longitude, latitude: " + event.mapPoint.longitude + ", " + event.mapPoint.latitude
+			// 			});
+			// 		}
+			// 	})
+			// });
+		});
+
+	</script>
+</head>
+
+<body>
+	<div id="viewDiv"></div>
+</body>
+
+</html>
